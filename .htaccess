@@ -1,0 +1,55 @@
+# ==============================================================================
+# FICHIER .HTACCESS CORRIGÉ POUR SOUS-DOMAINE RECRUTEMENT.SDCPJ.FR
+# ==============================================================================
+
+# Active le moteur de réécriture d'URL
+RewriteEngine On
+
+# --- ÉTAPE 1 : DÉFINIR LA BASE DE L'URL ---
+# Comme nous sommes sur un sous-domaine (recrutement.sdcpj.fr), la base est la racine "/"
+RewriteBase /
+
+# --- ÉTAPE 2 : FORCER LA CONNEXION SÉCURISÉE EN HTTPS ---
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# --- ÉTAPE 3 : RÈGLES POUR LES URL PROPRES (SANS .PHP) ---
+
+# Règle A : Rediriger les requêtes GET/HEAD qui tapent l'extension .php vers la version sans extension
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+RewriteRule ^ %1 [R=301,L]
+
+# Règle B : Réécrire en interne l'URL propre vers le vrai fichier .php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ $1.php [L]
+
+# --- ÉTAPE 4 : CONFIGURATION DU SERVEUR ET SÉCURITÉ ---
+
+# Définit la page d'accueil par défaut
+DirectoryIndex accueil
+
+# Empêche les visiteurs de lister le contenu des dossiers.
+Options -Indexes
+
+# Bloquer l'accès direct aux fichiers sensibles (logs, SQL, markdown, scripts CLI)
+<FilesMatch "\.(log|sql|env|git|md|json)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<Files "cron_check_trials.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</Files>

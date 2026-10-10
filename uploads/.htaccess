@@ -1,0 +1,8 @@
+﻿# Interdire l'exécution de tout script dans uploads
+<FilesMatch "\.(php|php5|php7|php8|phtml|phar|sh|pl|cgi|exe)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+Options -ExecCGI
+php_flag engine off
